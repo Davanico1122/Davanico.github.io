@@ -95,137 +95,128 @@
   <button onclick="resetGame()">Main Lagi</button>
   <button onclick="logout()">Keluar</button>
 
-  <audio id="clickSound" src="https://www.soundjay.com/button/sounds/button-3.mp3"></audio>
-  <audio id="winSound" src="https://www.soundjay.com/human/sounds/applause-8.mp3"></audio>
-  <audio id="drawSound" src="https://www.soundjay.com/button/sounds/button-10.mp3"></audio>
-
   <script>
-    const board = document.getElementById("board");
-    const result = document.getElementById("result");
-    const playerScoreEl = document.getElementById("playerScore");
-    const computerScoreEl = document.getElementById("computerScore");
-    const clickSound = document.getElementById("clickSound");
-    const winSound = document.getElementById("winSound");
-    const drawSound = document.getElementById("drawSound");
-    const modeSelect = document.getElementById("mode");
-    const playerName = document.getElementById("playerName");
+    document.addEventListener("DOMContentLoaded", () => {
+      const playerName = document.getElementById("playerName");
+      const storedName = localStorage.getItem("playerName");
 
-    // Ambil nama dari localStorage
-    const storedName = localStorage.getItem("playerName");
-    if (!storedName) {
-      window.location.href = "index.html"; // redirect jika belum login
-    } else {
+      if (!storedName) {
+        window.location.href = "index.html";
+        return;
+      }
+
       playerName.textContent = storedName;
-    }
 
-    let currentPlayer = "X";
-    let cells = ["", "", "", "", "", "", "", "", ""];
-    let gameOver = false;
-    let playerScore = 0;
-    let computerScore = 0;
+      const board = document.getElementById("board");
+      const result = document.getElementById("result");
+      const playerScoreEl = document.getElementById("playerScore");
+      const computerScoreEl = document.getElementById("computerScore");
+      const modeSelect = document.getElementById("mode");
 
-    function renderBoard() {
-      board.innerHTML = "";
-      cells.forEach((cell, index) => {
-        const div = document.createElement("div");
-        div.classList.add("cell");
-        div.textContent = cell;
-        div.addEventListener("click", () => handleMove(index));
-        board.appendChild(div);
-      });
-    }
+      let currentPlayer = "X";
+      let cells = Array(9).fill("");
+      let gameOver = false;
+      let playerScore = 0;
+      let computerScore = 0;
 
-    function handleMove(index) {
-      if (cells[index] !== "" || gameOver) return;
+      function renderBoard() {
+        board.innerHTML = "";
+        cells.forEach((cell, index) => {
+          const div = document.createElement("div");
+          div.classList.add("cell");
+          div.textContent = cell;
+          div.addEventListener("click", () => handleMove(index));
+          board.appendChild(div);
+        });
+      }
 
-      const mode = modeSelect.value;
+      function handleMove(index) {
+        if (cells[index] !== "" || gameOver) return;
 
-      cells[index] = currentPlayer;
-      clickSound.play();
+        const mode = modeSelect.value;
+        cells[index] = currentPlayer;
+        renderBoard();
+
+        if (checkWinner(currentPlayer)) {
+          if (currentPlayer === "X") playerScore++;
+          else computerScore++;
+          updateScore();
+          result.textContent = `${currentPlayer} menang!`;
+          gameOver = true;
+          return;
+        }
+
+        if (isDraw()) {
+          result.textContent = "Seri!";
+          gameOver = true;
+          return;
+        }
+
+        if (mode === "vsFriend") {
+          currentPlayer = currentPlayer === "X" ? "O" : "X";
+        } else if (mode === "vsComputer" && currentPlayer === "X") {
+          gameOver = true;
+          setTimeout(() => {
+            computerMove();
+            gameOver = false;
+          }, 500);
+        }
+      }
+
+      function computerMove() {
+        let emptyIndexes = cells.map((v, i) => v === "" ? i : null).filter(v => v !== null);
+        if (emptyIndexes.length === 0) return;
+        let move = emptyIndexes[Math.floor(Math.random() * emptyIndexes.length)];
+        cells[move] = "O";
+        renderBoard();
+
+        if (checkWinner("O")) {
+          computerScore++;
+          updateScore();
+          result.textContent = "Komputer menang!";
+          gameOver = true;
+          return;
+        }
+
+        if (isDraw()) {
+          result.textContent = "Seri!";
+          gameOver = true;
+        }
+      }
+
+      function checkWinner(player) {
+        const wins = [
+          [0,1,2],[3,4,5],[6,7,8],
+          [0,3,6],[1,4,7],[2,5,8],
+          [0,4,8],[2,4,6]
+        ];
+        return wins.some(combo => combo.every(i => cells[i] === player));
+      }
+
+      function isDraw() {
+        return cells.every(cell => cell !== "") && !checkWinner("X") && !checkWinner("O");
+      }
+
+      function updateScore() {
+        playerScoreEl.textContent = playerScore;
+        computerScoreEl.textContent = computerScore;
+      }
+
+      window.resetGame = function () {
+        cells = Array(9).fill("");
+        result.textContent = "";
+        currentPlayer = "X";
+        gameOver = false;
+        renderBoard();
+      }
+
+      window.logout = function () {
+        localStorage.removeItem("playerName");
+        window.location.href = "index.html";
+      }
+
       renderBoard();
-
-      if (checkWinner(currentPlayer)) {
-        if (currentPlayer === "X") playerScore++;
-        else computerScore++;
-        updateScore();
-        result.textContent = `${currentPlayer} menang!`;
-        winSound.play();
-        gameOver = true;
-        return;
-      }
-
-      if (isDraw()) {
-        result.textContent = "Seri!";
-        drawSound.play();
-        gameOver = true;
-        return;
-      }
-
-      if (mode === "vsFriend") {
-        currentPlayer = currentPlayer === "X" ? "O" : "X";
-      } else if (mode === "vsComputer" && currentPlayer === "X") {
-        gameOver = true;
-        setTimeout(() => {
-          computerMove();
-          gameOver = false;
-        }, 500);
-      }
-    }
-
-    function computerMove() {
-      let emptyIndexes = cells.map((v, i) => v === "" ? i : null).filter(v => v !== null);
-      if (emptyIndexes.length === 0) return;
-      let move = emptyIndexes[Math.floor(Math.random() * emptyIndexes.length)];
-      cells[move] = "O";
-      clickSound.play();
-      renderBoard();
-      if (checkWinner("O")) {
-        computerScore++;
-        updateScore();
-        result.textContent = "Komputer menang!";
-        winSound.play();
-        gameOver = true;
-        return;
-      }
-      if (isDraw()) {
-        result.textContent = "Seri!";
-        drawSound.play();
-        gameOver = true;
-      }
-    }
-
-    function checkWinner(player) {
-      const wins = [
-        [0,1,2],[3,4,5],[6,7,8],
-        [0,3,6],[1,4,7],[2,5,8],
-        [0,4,8],[2,4,6]
-      ];
-      return wins.some(combo => combo.every(i => cells[i] === player));
-    }
-
-    function isDraw() {
-      return cells.every(cell => cell !== "") && !checkWinner("X") && !checkWinner("O");
-    }
-
-    function updateScore() {
-      playerScoreEl.textContent = playerScore;
-      computerScoreEl.textContent = computerScore;
-    }
-
-    function resetGame() {
-      cells = ["", "", "", "", "", "", "", "", ""];
-      result.textContent = "";
-      currentPlayer = "X";
-      gameOver = false;
-      renderBoard();
-    }
-
-    function logout() {
-      localStorage.removeItem("playerName");
-      window.location.href = "index.html";
-    }
-
-    renderBoard();
+    });
   </script>
 </body>
 </html>
