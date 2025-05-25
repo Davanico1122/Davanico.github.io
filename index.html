@@ -1,9 +1,62 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta http-equiv="refresh" content="0; URL='game.html'" />
-  </head>
-  <body>
-    <p>Redirecting to <a href="game.html">game.html</a></p>
-  </body>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Login | Tic Tac Toe</title>
+  <style>
+    body {
+      background-color: #111827;
+      color: #f9fafb;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+    }
+
+    h1 {
+      color: #60a5fa;
+    }
+
+    input, button {
+      padding: 10px;
+      margin: 10px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: none;
+    }
+
+    input {
+      width: 200px;
+    }
+
+    button {
+      background-color: #2563eb;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #1d4ed8;
+    }
+  </style>
+</head>
+<body>
+  <h1>Login Tic Tac Toe</h1>
+  <input type="text" id="username" placeholder="Masukkan nama" required />
+  <button onclick="login()">Masuk</button>
+
+  <script>
+    function login() {
+      const name = document.getElementById("username").value.trim();
+      if (name !== "") {
+        localStorage.setItem("playerName", name); // Simpan nama pemain
+        window.location.href = "game.html"; // Arahkan ke halaman game
+      } else {
+        alert("Silakan masukkan nama terlebih dahulu.");
+      }
+    }
+  </script>
+</body>
 </html>
