@@ -51,8 +51,8 @@
     function login() {
       const name = document.getElementById("username").value.trim();
       if (name !== "") {
-        localStorage.setItem("playerName", name); // Simpan nama pemain
-        window.location.href = "game.html"; // Arahkan ke halaman game
+        localStorage.setItem("playerName", name);
+        window.location.href = "game.html";
       } else {
         alert("Silakan masukkan nama terlebih dahulu.");
       }
